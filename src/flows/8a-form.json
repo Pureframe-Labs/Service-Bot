@@ -1,0 +1,106 @@
+{
+  "name": "8a_form_flow",
+  "version": "3",
+  "screens": [
+    {
+      "id": "welcome_screen",
+      "title": "8A Form Application",
+      "content": {
+        "type": "form",
+        "data": {
+          "body": "Welcome to the 8A Form application. Please fill in the required details to proceed.",
+          "footer": "All fields marked with * are required"
+        }
+      }
+    },
+    {
+      "id": "personal_details",
+      "title": "Personal Details",
+      "content": {
+        "type": "form",
+        "data": {
+          "controls": [
+            {
+              "type": "text",
+              "name": "full_name",
+              "label": "Full Name *",
+              "required": true,
+              "placeholder": "Enter your full name"
+            },
+            {
+              "type": "email",
+              "name": "email",
+              "label": "Email Address *",
+              "required": true,
+              "placeholder": "Enter your email address"
+            },
+            {
+              "type": "phone_number",
+              "name": "phone",
+              "label": "Phone Number *",
+              "required": true,
+              "placeholder": "Enter your phone number"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "property_details",
+      "title": "Property Details",
+      "content": {
+        "type": "form",
+        "data": {
+          "controls": [
+            {
+              "type": "text",
+              "name": "state",
+              "label": "State *",
+              "required": true,
+              "placeholder": "Enter state"
+            },
+            {
+              "type": "text",
+              "name": "district",
+              "label": "District *",
+              "required": true,
+              "placeholder": "Enter district"
+            },
+            {
+              "type": "text",
+              "name": "tahsil",
+              "label": "Tahsil/Taluka *",
+              "required": true,
+              "placeholder": "Enter tahsil"
+            },
+            {
+              "type": "text",
+              "name": "village",
+              "label": "Village *",
+              "required": true,
+              "placeholder": "Enter village"
+            },
+            {
+              "type": "text",
+              "name": "survey_number",
+              "label": "Survey Number *",
+              "required": true,
+              "placeholder": "Enter survey number"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "review_screen",
+      "title": "Review & Submit",
+      "content": {
+        "type": "form",
+        "data": {
+          "body": "Please review your information before submitting. Click submit to proceed to payment.",
+          "footer": "Total Amount: ₹100"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,600 @@
+{
+  "info": {
+    "_postman_id": "whatsapp-bot-api-collection",
+    "name": "WhatsApp Bot API - Complete Test Collection",
+    "description": "Complete Postman collection for testing WhatsApp Bot API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Webhook",
+      "item": [
+        {
+          "name": "Verify Webhook",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains challenge token', function () {",
+                  "    pm.expect(pm.response.text()).to.include(pm.variables.get('challenge'));",
+                  "});",
+                  "",
+                  "pm.test('Verify webhook response time is less than 2s', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/webhook?hub.mode=subscribe&hub.challenge={{challenge}}&hub.verify_token={{verify_token}}",
+              "host": ["{{base_url}}"],
+              "path": ["webhook"],
+              "query": [
+                {
+                  "key": "hub.mode",
+                  "value": "subscribe"
+                },
+                {
+                  "key": "hub.challenge",
+                  "value": "{{challenge}}"
+                },
+                {
+                  "key": "hub.verify_token",
+                  "value": "{{verify_token}}"
+                }
+              ]
+            },
+            "description": "Verify webhook endpoint with Meta's challenge token"
+          }
+        },
+        {
+          "name": "Simulate User Message - 'hi'",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": ["// Set timestamp for dynamic values", "pm.variables.set('timestamp', Date.now());"]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response body should have entry array', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('entry');",
+                  "    pm.expect(jsonData.entry).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Webhook should accept the message', function () {",
+                  "    pm.response.code === 200;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"object\": \"whatsapp_business_account\",\n  \"entry\": [\n    {\n      \"id\": \"{{business_account_id}}\",\n      \"changes\": [\n        {\n          \"value\": {\n            \"messaging_product\": \"whatsapp\",\n            \"metadata\": {\n              \"display_phone_number\": \"{{display_phone_number}}\",\n              \"phone_number_id\": \"{{phone_number_id}}\"\n            },\n            \"messages\": [\n              {\n                \"from\": \"{{user_phone}}\",\n                \"id\": \"wamid.{{timestamp}}\",\n                \"timestamp\": \"{{timestamp}}\",\n                \"type\": \"text\",\n                \"text\": {\n                  \"body\": \"hi\"\n                }\n              }\n            ]\n          },\n          \"field\": \"messages\"\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/webhook",
+              "host": ["{{base_url}}"],
+              "path": ["webhook"]
+            },
+            "description": "Test user message 'hi' to trigger welcome flow"
+          }
+        },
+        {
+          "name": "Simulate Interactive Button Click - 8A",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": ["pm.variables.set('timestamp', Date.now());"]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Button click should be processed', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('object');",
+                  "});",
+                  "",
+                  "pm.test('Response time should be under 3s', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"object\": \"whatsapp_business_account\",\n  \"entry\": [\n    {\n      \"id\": \"{{business_account_id}}\",\n      \"changes\": [\n        {\n          \"value\": {\n            \"messaging_product\": \"whatsapp\",\n            \"metadata\": {\n              \"display_phone_number\": \"{{display_phone_number}}\",\n              \"phone_number_id\": \"{{phone_number_id}}\"\n            },\n            \"messages\": [\n              {\n                \"from\": \"{{user_phone}}\",\n                \"id\": \"wamid.{{timestamp}}\",\n                \"timestamp\": \"{{timestamp}}\",\n                \"type\": \"interactive\",\n                \"interactive\": {\n                  \"type\": \"button_reply\",\n                  \"button_reply\": {\n                    \"id\": \"8a_button\",\n                    \"title\": \"8A\"\n                  }\n                }\n              }\n            ]\n          },\n          \"field\": \"messages\"\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/webhook",
+              "host": ["{{base_url}}"],
+              "path": ["webhook"]
+            },
+            "description": "Simulate user clicking '8A' button"
+          }
+        },
+        {
+          "name": "Simulate Flow Completion",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": ["pm.variables.set('timestamp', Date.now());"]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Flow completion should create order', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});",
+                  "",
+                  "pm.test('Response should be valid JSON', function () {",
+                  "    pm.response.json();",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"object\": \"whatsapp_business_account\",\n  \"entry\": [\n    {\n      \"id\": \"{{business_account_id}}\",\n      \"changes\": [\n        {\n          \"value\": {\n            \"messaging_product\": \"whatsapp\",\n            \"metadata\": {\n              \"display_phone_number\": \"{{display_phone_number}}\",\n              \"phone_number_id\": \"{{phone_number_id}}\"\n            },\n            \"messages\": [\n              {\n                \"from\": \"{{user_phone}}\",\n                \"id\": \"wamid.{{timestamp}}\",\n                \"timestamp\": \"{{timestamp}}\",\n                \"type\": \"interactive\",\n                \"interactive\": {\n                  \"type\": \"nfm_reply\",\n                  \"nfm_reply\": {\n                    \"response_json\": \"{\\\"name\\\":\\\"John Doe\\\",\\\"email\\\":\\\"john@example.com\\\",\\\"property_type\\\":\\\"8A\\\",\\\"budget\\\":\\\"50L\\\",\\\"location\\\":\\\"Mumbai\\\"}\"\n                  }\n                }\n              }\n            ]\n          },\n          \"field\": \"messages\"\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/webhook",
+              "host": ["{{base_url}}"],
+              "path": ["webhook"]
+            },
+            "description": "Simulate flow form submission with user details"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payment",
+      "item": [
+        {
+          "name": "Payment Success Callback",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Payment success response should contain success message', function () {",
+                  "    pm.expect(pm.response.text()).to.include('success');",
+                  "});",
+                  "",
+                  "pm.test('Response time should be under 2s', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payment/success?orderId={{order_id}}&paymentId=pay_12345&email=test@example.com&mock=true",
+              "host": ["{{base_url}}"],
+              "path": ["payment", "success"],
+              "query": [
+                {
+                  "key": "orderId",
+                  "value": "{{order_id}}"
+                },
+                {
+                  "key": "paymentId",
+                  "value": "pay_12345"
+                },
+                {
+                  "key": "email",
+                  "value": "test@example.com"
+                },
+                {
+                  "key": "mock",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Simulate successful payment completion"
+          }
+        },
+        {
+          "name": "Payment Failure Callback",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Payment failure response should be handled', function () {",
+                  "    pm.expect(pm.response.text()).to.include('failure');",
+                  "});",
+                  "",
+                  "pm.test('Response time should be quick', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payment/failure?orderId={{order_id}}&reason=insufficient_funds",
+              "host": ["{{base_url}}"],
+              "path": ["payment", "failure"],
+              "query": [
+                {
+                  "key": "orderId",
+                  "value": "{{order_id}}"
+                },
+                {
+                  "key": "reason",
+                  "value": "insufficient_funds"
+                }
+              ]
+            },
+            "description": "Simulate payment failure callback"
+          }
+        },
+        {
+          "name": "Payment Checkout Page",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response should contain checkout HTML', function () {",
+                  "    pm.expect(pm.response.text()).to.include('Secure Checkout');",
+                  "});",
+                  "",
+                  "pm.test('Checkout page should include order ID', function () {",
+                  "    pm.expect(pm.response.text()).to.include('{{order_id}}');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payment/checkout?orderId={{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["payment", "checkout"],
+              "query": [
+                {
+                  "key": "orderId",
+                  "value": "{{order_id}}"
+                }
+              ]
+            },
+            "description": "Get the checkout page for payment"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Facebook Graph API - Send Messages",
+      "item": [
+        {
+          "name": "Send Welcome Message via Meta API",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response should have message ID', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('messages');",
+                  "});",
+                  "",
+                  "pm.test('Response time should be under 3s', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{user_phone}}\",\n  \"type\": \"interactive\",\n  \"interactive\": {\n    \"type\": \"button\",\n    \"body\": {\n      \"text\": \"Welcome to our property service!\\n\\nSelect a property type:\"\n    },\n    \"action\": {\n      \"buttons\": [\n        {\n          \"type\": \"reply\",\n          \"reply\": {\n            \"id\": \"button_8a\",\n            \"title\": \"8A\"\n          }\n        },\n        {\n          \"type\": \"reply\",\n          \"reply\": {\n            \"id\": \"button_7_12\",\n            \"title\": \"7/12\"\n          }\n        },\n        {\n          \"type\": \"reply\",\n          \"reply\": {\n            \"id\": \"button_ferfar\",\n            \"title\": \"Ferfar\"\n          }\n        },\n        {\n          \"type\": \"reply\",\n          \"reply\": {\n            \"id\": \"button_property_card\",\n            \"title\": \"Property Card\"\n          }\n        }\n      ]\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "https://graph.facebook.com/v22.0/{{phone_number_id}}/messages",
+              "protocol": "https",
+              "host": ["graph", "facebook", "com"],
+              "path": ["v22.0", "{{phone_number_id}}", "messages"]
+            },
+            "description": "Send welcome message with 4 property option buttons via Meta API"
+          }
+        },
+        {
+          "name": "Send Flow Link via Meta API",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains messages', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('messages');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{user_phone}}\",\n  \"type\": \"interactive\",\n  \"interactive\": {\n    \"type\": \"flow\",\n    \"body\": {\n      \"text\": \"Please fill the form to proceed\"\n    },\n    \"action\": {\n      \"name\": \"data_exchange\",\n      \"parameters\": {\n        \"flow_id\": \"{{flow_id}}\",\n        \"flow_cta\": \"Open Form\",\n        \"flow_action\": \"navigate\",\n        \"flow_token\": \"AQAAAAACS5FpgQ_cAAAAAD7mRxrF\"\n      }\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "https://graph.facebook.com/v22.0/{{phone_number_id}}/messages",
+              "protocol": "https",
+              "host": ["graph", "facebook", "com"],
+              "path": ["v22.0", "{{phone_number_id}}", "messages"]
+            },
+            "description": "Send WhatsApp Flow link for user to fill form"
+          }
+        },
+        {
+          "name": "Send Payment Link via Meta API",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Payment link sent successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.messages).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{user_phone}}\",\n  \"type\": \"text\",\n  \"text\": {\n    \"preview_url\": true,\n    \"body\": \"Your payment link is ready!\\n\\nAmount: ₹{{amount}}\\nOrder ID: {{order_id}}\\n\\nClick the link below to complete payment:\\n{{payment_link}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "https://graph.facebook.com/v22.0/{{phone_number_id}}/messages",
+              "protocol": "https",
+              "host": ["graph", "facebook", "com"],
+              "path": ["v22.0", "{{phone_number_id}}", "messages"]
+            },
+            "description": "Send payment link to user after form submission"
+          }
+        },
+        {
+          "name": "Send Confirmation Message via Meta API",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Confirmation message sent', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('messages');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{user_phone}}\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"✅ Payment Confirmed!\\n\\nThank you for your purchase!\\n\\nOrder Details:\\n- Order ID: {{order_id}}\\n- Amount: ₹{{amount}}\\n- Status: Completed\\n\\nYour property documents will be sent within 24 hours.\\n\\nFor support, contact: support@property.com\"\n  }\n}"
+            },
+            "url": {
+              "raw": "https://graph.facebook.com/v22.0/{{phone_number_id}}/messages",
+              "protocol": "https",
+              "host": ["graph", "facebook", "com"],
+              "path": ["v22.0", "{{phone_number_id}}", "messages"]
+            },
+            "description": "Send payment confirmation message to user after successful transaction"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "verify_token",
+      "value": "your_verify_token_here",
+      "type": "string"
+    },
+    {
+      "key": "challenge",
+      "value": "challenge_token_1234567890",
+      "type": "string"
+    },
+    {
+      "key": "business_account_id",
+      "value": "123456789",
+      "type": "string"
+    },
+    {
+      "key": "phone_number_id",
+      "value": "945940578601053",
+      "type": "string",
+      "description": "Your actual phone number ID from Meta"
+    },
+    {
+      "key": "display_phone_number",
+      "value": "+1234567890",
+      "type": "string"
+    },
+    {
+      "key": "user_phone",
+      "value": "919876543210",
+      "type": "string",
+      "description": "Customer's WhatsApp phone number (with country code)"
+    },
+    {
+      "key": "order_id",
+      "value": "ORDER_123456",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "your_meta_access_token_here",
+      "type": "string",
+      "description": "Your Meta/Facebook Graph API access token"
+    },
+    {
+      "key": "flow_id",
+      "value": "your_flow_id_here",
+      "type": "string",
+      "description": "Your WhatsApp Flow ID from Meta Business Account"
+    },
+    {
+      "key": "amount",
+      "value": "5000",
+      "type": "string",
+      "description": "Payment amount in rupees"
+    },
+    {
+      "key": "payment_link",
+      "value": "http://localhost:3000/payment/checkout?orderId=ORDER_123456",
+      "type": "string",
+      "description": "Your payment gateway link (ngrok URL in production)"
+    }
+  ]
+}
